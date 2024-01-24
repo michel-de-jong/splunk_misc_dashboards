@@ -1,0 +1,57 @@
+<dashboard version="1.1">
+  <label>Concurrent Cron Schedules</label>
+  <row>
+    <panel>
+      <title>Concurrent Cron Schedules</title>
+      <table>
+        <search>
+          <query>| rest /servicesNS/-/-/saved/searches  splunk_server=local 
+| fields title eai:acl.app disabled cron_schedule is_scheduled
+| where disabled=0 AND is_scheduled=1
+| stats values(eai:acl.app) as app values(title) as title count by cron_schedule
+| sort - count</query>
+          <earliest>-30m@m</earliest>
+          <latest>now</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="count">10</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="percentagesRow">false</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>cron including owner</title>
+      <table>
+        <search>
+          <query>| rest /servicesNS/-/-/saved/searches splunk_server=local 
+| fields title eai:acl.app disabled cron_schedule is_scheduled 
+| where disabled=0 AND is_scheduled=1 AND cron_schedule="1-59/15 * * * *" 
+| stats values(eai:acl.app) as app by cron_schedule title 
+| sort - count 
+| join title 
+    [| rest /servicesNS/-/-/saved/searches splunk_server=local 
+    | fields title eai:acl.owner disabled cron_schedule is_scheduled 
+    | where disabled=0 AND is_scheduled=1 AND cron_schedule="1-59/15 * * * *"
+    | rename eai:acl.* as *
+    | fields title owner ]</query>
+          <earliest>-30m@m</earliest>
+          <latest>now</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="count">20</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="percentagesRow">false</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+      </table>
+    </panel>
+  </row>
+</dashboard>

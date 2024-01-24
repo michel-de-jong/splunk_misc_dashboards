@@ -1,0 +1,264 @@
+<form version="1.1">
+  <label>User Role MetaData</label>
+  <fieldset submitButton="false">
+  <search id="base_user">
+    <query>
+    | rest /services/authentication/users 
+    | table defaultApp id realname email roles type splunk_server capabilities 
+    | replace "*%40*" with "*@*" in id 
+    | rex field=id "/users/(?<user>.+)$"
+    | table user id realname email roles type capabilities
+    </query>
+    <earliest>-1h@h</earliest>
+    <latest>now</latest>
+    <input type="dropdown" token="user" searchWhenChanged="true">
+      <label>User</label>
+      <choice value="*">All</choice>
+      <default>*</default>
+      <fieldForLabel>user</fieldForLabel>
+      <fieldForValue>user</fieldForValue>
+      <search base="base_user">
+        <query>
+| table user
+| sort user</query>
+      </search>
+    </input>
+    <input type="text" token="user_pattern" searchWhenChanged="true">
+      <label>User Pattern</label>
+      <default>*</default>
+    </input>
+    <input type="dropdown" token="real_name" searchWhenChanged="true">
+      <label>Real Name</label>
+      <choice value="*">All</choice>
+      <default>*</default>
+      <fieldForLabel>realname</fieldForLabel>
+      <fieldForValue>realname</fieldForValue>
+      <search base="base_user">
+        <query>
+| dedup realname
+| table realname
+| sort realname</query>
+        <earliest>-24h@h</earliest>
+        <latest>now</latest>
+      </search>
+    </input>
+    <input type="text" token="real_name_pattern" searchWhenChanged="true">
+      <label>Real Name Pattern</label>
+      <default>*</default>
+    </input>
+    <input type="dropdown" token="email" searchWhenChanged="true">
+      <label>Email</label>
+      <choice value="*">All</choice>
+      <fieldForLabel>email</fieldForLabel>
+      <fieldForValue>email</fieldForValue>
+      <default>*</default>
+      <search base="base_user">
+        <query>
+| dedup email
+| table email
+| sort email</query>
+      </search>
+    </input>
+    <input type="text" token="email_pattern" searchWhenChanged="true">
+      <label>Email Pattern</label>
+      <default>*</default>
+    </input>
+    <input type="dropdown" token="type" searchWhenChanged="true">
+      <label>Type</label>
+      <choice value="*">All</choice>
+      <default>*</default>
+      <fieldForLabel>type</fieldForLabel>
+      <fieldForValue>type</fieldForValue>
+      <search base="base_user">
+        <query>
+| dedup type
+| table type
+| sort type</query>
+        <earliest>-24h@h</earliest>
+        <latest>now</latest>
+      </search>
+    </input>
+    <input type="dropdown" token="role" searchWhenChanged="true">
+      <label>Role</label>
+      <choice value="*">All</choice>
+      <fieldForLabel>roles</fieldForLabel>
+      <fieldForValue>roles</fieldForValue>
+      <search base="base_user">
+        <query>
+| table roles
+| mvexpand roles
+| dedup roles
+| table roles
+| sort roles</query>
+        <earliest>-24h@h</earliest>
+        <latest>now</latest>
+      </search>
+      <default>*</default>
+    </input>
+    <input type="text" token="role_pattern" searchWhenChanged="true">
+      <label>Role Pattern</label>
+      <default>*</default>
+    </input>
+  </fieldset>
+  <row>
+    <panel>
+      <title>User Accounts</title>
+      <table>
+        <title>(click row for specific user detail)</title>
+        <search base="base_user">
+          <query>
+| search realname="$real_name$" realname="*$real_name_pattern$*" email="$email$" email="*$email_pattern$*" roles="$role$" roles="*$role_pattern$*" type="$type$" 
+| table defaultApp id realname email roles type  capabilities 
+| replace "*%40*" with "*@*" in id 
+| rex field=id "/users/(?&lt;user&gt;.+)$" 
+| table user realname email type roles  
+| search user="$user$" user="*$user_pattern$*" 
+| sort -type user</query>
+          <earliest>0</earliest>
+          <latest></latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="count">20</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">cell</option>
+        <option name="refresh.display">progressbar</option>
+        <format type="color" field="action">
+          <colorPalette type="sharedList"></colorPalette>
+          <scale type="sharedCategory"></scale>
+        </format>
+        <format type="color" field="host">
+          <colorPalette type="sharedList"></colorPalette>
+          <scale type="sharedCategory"></scale>
+        </format>
+        <format type="color" field="type">
+          <colorPalette type="sharedList"></colorPalette>
+          <scale type="sharedCategory"></scale>
+        </format>
+        <format type="color" field="roles">
+          <colorPalette type="sharedList"></colorPalette>
+          <scale type="sharedCategory"></scale>
+        </format>
+        <format type="color" field="splunk_server">
+          <colorPalette type="sharedList"></colorPalette>
+          <scale type="sharedCategory"></scale>
+        </format>
+        <drilldown>
+          <unset token="user"></unset>
+          <set token="user">$click.value$</set>
+        </drilldown>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>Role Capabilities</title>
+      <table>
+        <search base="base_user">
+          <query>
+| search realname="$real_name$" realname="*$real_name_pattern$*" email="$email$" email="*$email_pattern$*" roles="$role$" roles="*$role_pattern$*" type="$type$" 
+| table defaultApp id realname email roles type splunk_server 
+| replace "*%40*" with "*@*" in id 
+| rex field=id "/users/(?&lt;user&gt;.+)$" 
+| table user realname email type roles splunk_server 
+| search user="$user$" user="***" user IN (*) 
+| rename roles as role 
+| table role 
+| mvexpand role 
+| dedup role 
+| join role 
+    [ | rest /services/authorization/roles 
+    | fields title srchIndexesAllowed srchIndexesDisallowed imported_roles imported_srchIndexesAllowed srchJobsQuota srchDiskQuota capabilities  imported_capabilities
+    | dedup title 
+    | rename title as role
+    | table role capabilities ] 
+| table role capabilities   
+| sort role 
+| transpose 1000 column_name=role header_field=role</query>
+          <earliest>0</earliest>
+          <latest></latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="count">10</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="refresh.display">progressbar</option>
+        <format type="color" field="action">
+          <colorPalette type="sharedList"></colorPalette>
+          <scale type="sharedCategory"></scale>
+        </format>
+        <format type="color" field="host">
+          <colorPalette type="sharedList"></colorPalette>
+          <scale type="sharedCategory"></scale>
+        </format>
+        <format type="color" field="type">
+          <colorPalette type="sharedList"></colorPalette>
+          <scale type="sharedCategory"></scale>
+        </format>
+        <format type="color" field="roles">
+          <colorPalette type="sharedList"></colorPalette>
+          <scale type="sharedCategory"></scale>
+        </format>
+        <format type="color" field="splunk_server">
+          <colorPalette type="sharedList"></colorPalette>
+          <scale type="sharedCategory"></scale>
+        </format>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>Role Index Access</title>
+      <table>
+        <search base="base_user">
+          <query>
+| search realname="$real_name$" realname="*$real_name_pattern$*" email="$email$" email="*$email_pattern$*" roles="$role$" roles="*$role_pattern$*" type="$type$" 
+| table defaultApp id realname email roles type splunk_server 
+| replace "*%40*" with "*@*" in id 
+| rex field=id "/users/(?&lt;user&gt;.+)$" 
+| table user realname email type roles splunk_server 
+| search user="$user$" user="***" user IN (*) 
+| rename roles as role 
+| table role 
+| mvexpand role 
+| dedup role 
+| join role 
+     [ | rest /services/authorization/roles 
+    | fields title srchIndexesAllowed srchIndexesDisallowed imported_roles imported_srchIndexesAllowed srchJobsQuota srchDiskQuota capabilities  imported_capabilities
+    | dedup title 
+    | rename title as role
+    | table role srchIndexesAllowed srchIndexesDisallowed imported_roles imported_srchIndexesAllowed srchJobsQuota srchDiskQuota ] 
+| table role srchIndexesAllowed srchIndexesDisallowed  srchJobsQuota srchDiskQuota
+| sort role 
+| transpose 1000 column_name=role header_field=role</query>
+          <earliest>0</earliest>
+          <latest></latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="count">10</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="refresh.display">progressbar</option>
+        <format type="color" field="action">
+          <colorPalette type="sharedList"></colorPalette>
+          <scale type="sharedCategory"></scale>
+        </format>
+        <format type="color" field="host">
+          <colorPalette type="sharedList"></colorPalette>
+          <scale type="sharedCategory"></scale>
+        </format>
+        <format type="color" field="type">
+          <colorPalette type="sharedList"></colorPalette>
+          <scale type="sharedCategory"></scale>
+        </format>
+        <format type="color" field="roles">
+          <colorPalette type="sharedList"></colorPalette>
+          <scale type="sharedCategory"></scale>
+        </format>
+        <format type="color" field="splunk_server">
+          <colorPalette type="sharedList"></colorPalette>
+          <scale type="sharedCategory"></scale>
+        </format>
+      </table>
+    </panel>
+  </row>
+</form>

@@ -1,0 +1,250 @@
+<form version="1.1">
+  <label>SVC utilization</label>
+  <search id="base">
+    <query>
+      index=summary source="splunk-svc-consumer" svc_usage=* 
+| rex field=host "^[^.]+[.](?&lt;event_stack&gt;[^.]+)" 
+| where event_stack="barclayscsoprodsiem" 
+| eval search_head_names=if(isnull(search_head_names), "Historical", search_head_names) 
+| fields svc_usage svc_consumer svc_consumption_score search_type search_app search_label search_user search_head_names 
+| eval search_label=if(isnull(search_label) OR search_label=="", "adhoc-search", search_label) 
+| fillnull value="" svc_consumer process_type search_provenances search_type search_app search_label search_user unified_sid search_modes labels search_head_names usage_source 
+| stats max(svc_usage) as utilized_svc by _time svc_consumer search_type search_app search_label search_user search_head_names unified_sid process_type 
+| bin _time span=1h
+| search svc_consumer="search" search_app!="" search_head_names="*" 
+| where utilized_svc&gt;1 
+| fields *
+    </query>
+    <earliest>$time.earliest$</earliest>
+    <latest>$time.latest$</latest>
+  </search>
+  <fieldset submitButton="false">
+    <input type="time" token="time" searchWhenChanged="true">
+      <label>Timespan</label>
+      <default>
+        <earliest>-7d@d</earliest>
+        <latest>@d</latest>
+      </default>
+    </input>
+  </fieldset>
+  <row>
+    <panel>
+      <title>Top 10 - by App</title>
+      <chart>
+        <search base="base">
+          <query>
+| timechart useother=f span=1h sum(utilized_svc) by search_app
+```| stats sum(utilized_svc) as utilized_svc by search_label search_app search_type search_user search_head_names _time 
+| eval utilized_svc=round(utilized_svc,2) 
+| sort - utilized_svc
+| rename search_head_names as search_head```</query>
+        </search>
+        <option name="charting.axisLabelsX.majorLabelStyle.overflowMode">ellipsisNone</option>
+        <option name="charting.axisLabelsX.majorLabelStyle.rotation">0</option>
+        <option name="charting.axisTitleX.visibility">visible</option>
+        <option name="charting.axisTitleY.visibility">visible</option>
+        <option name="charting.axisTitleY2.visibility">visible</option>
+        <option name="charting.axisX.abbreviation">none</option>
+        <option name="charting.axisX.scale">linear</option>
+        <option name="charting.axisY.abbreviation">none</option>
+        <option name="charting.axisY.scale">linear</option>
+        <option name="charting.axisY2.abbreviation">none</option>
+        <option name="charting.axisY2.enabled">0</option>
+        <option name="charting.axisY2.scale">inherit</option>
+        <option name="charting.chart">column</option>
+        <option name="charting.chart.bubbleMaximumSize">50</option>
+        <option name="charting.chart.bubbleMinimumSize">10</option>
+        <option name="charting.chart.bubbleSizeBy">area</option>
+        <option name="charting.chart.nullValueMode">gaps</option>
+        <option name="charting.chart.showDataLabels">none</option>
+        <option name="charting.chart.sliceCollapsingThreshold">0.01</option>
+        <option name="charting.chart.stackMode">stacked</option>
+        <option name="charting.chart.style">shiny</option>
+        <option name="charting.drilldown">none</option>
+        <option name="charting.layout.splitSeries">0</option>
+        <option name="charting.layout.splitSeries.allowIndependentYRanges">0</option>
+        <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
+        <option name="charting.legend.mode">standard</option>
+        <option name="charting.legend.placement">right</option>
+        <option name="charting.lineWidth">2</option>
+        <option name="trellis.enabled">0</option>
+        <option name="trellis.scales.shared">1</option>
+        <option name="trellis.size">medium</option>
+      </chart>
+    </panel>
+    <panel>
+      <title>Top 10 - by SearchType</title>
+      <chart>
+        <search base="base">
+          <query>
+| timechart useother=f span=1h sum(utilized_svc) by search_type
+```| stats sum(utilized_svc) as utilized_svc by search_label search_app search_type search_user search_head_names _time 
+| eval utilized_svc=round(utilized_svc,2) 
+| sort - utilized_svc
+| rename search_head_names as search_head```</query>
+        </search>
+        <option name="charting.axisLabelsX.majorLabelStyle.overflowMode">ellipsisNone</option>
+        <option name="charting.axisLabelsX.majorLabelStyle.rotation">0</option>
+        <option name="charting.axisTitleX.visibility">visible</option>
+        <option name="charting.axisTitleY.visibility">visible</option>
+        <option name="charting.axisTitleY2.visibility">visible</option>
+        <option name="charting.axisX.abbreviation">none</option>
+        <option name="charting.axisX.scale">linear</option>
+        <option name="charting.axisY.abbreviation">none</option>
+        <option name="charting.axisY.scale">linear</option>
+        <option name="charting.axisY2.abbreviation">none</option>
+        <option name="charting.axisY2.enabled">0</option>
+        <option name="charting.axisY2.scale">inherit</option>
+        <option name="charting.chart">column</option>
+        <option name="charting.chart.bubbleMaximumSize">50</option>
+        <option name="charting.chart.bubbleMinimumSize">10</option>
+        <option name="charting.chart.bubbleSizeBy">area</option>
+        <option name="charting.chart.nullValueMode">gaps</option>
+        <option name="charting.chart.showDataLabels">none</option>
+        <option name="charting.chart.sliceCollapsingThreshold">0.01</option>
+        <option name="charting.chart.stackMode">stacked</option>
+        <option name="charting.chart.style">shiny</option>
+        <option name="charting.drilldown">none</option>
+        <option name="charting.layout.splitSeries">0</option>
+        <option name="charting.layout.splitSeries.allowIndependentYRanges">0</option>
+        <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
+        <option name="charting.legend.mode">standard</option>
+        <option name="charting.legend.placement">right</option>
+        <option name="charting.lineWidth">2</option>
+        <option name="trellis.enabled">0</option>
+        <option name="trellis.scales.shared">1</option>
+        <option name="trellis.size">medium</option>
+      </chart>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>Top 10 - by SearchName</title>
+      <chart>
+        <search base="base">
+          <query>
+| timechart useother=f span=1h sum(utilized_svc) by search_label
+```| stats sum(utilized_svc) as utilized_svc by search_label search_app search_type search_user search_head_names _time 
+| eval utilized_svc=round(utilized_svc,2) 
+| sort - utilized_svc
+| rename search_head_names as search_head```</query>
+        </search>
+        <option name="charting.axisLabelsX.majorLabelStyle.overflowMode">ellipsisNone</option>
+        <option name="charting.axisLabelsX.majorLabelStyle.rotation">0</option>
+        <option name="charting.axisTitleX.visibility">visible</option>
+        <option name="charting.axisTitleY.visibility">visible</option>
+        <option name="charting.axisTitleY2.visibility">visible</option>
+        <option name="charting.axisX.abbreviation">none</option>
+        <option name="charting.axisX.scale">linear</option>
+        <option name="charting.axisY.abbreviation">none</option>
+        <option name="charting.axisY.scale">linear</option>
+        <option name="charting.axisY2.abbreviation">none</option>
+        <option name="charting.axisY2.enabled">0</option>
+        <option name="charting.axisY2.scale">inherit</option>
+        <option name="charting.chart">column</option>
+        <option name="charting.chart.bubbleMaximumSize">50</option>
+        <option name="charting.chart.bubbleMinimumSize">10</option>
+        <option name="charting.chart.bubbleSizeBy">area</option>
+        <option name="charting.chart.nullValueMode">gaps</option>
+        <option name="charting.chart.showDataLabels">none</option>
+        <option name="charting.chart.sliceCollapsingThreshold">0.01</option>
+        <option name="charting.chart.stackMode">stacked</option>
+        <option name="charting.chart.style">shiny</option>
+        <option name="charting.drilldown">none</option>
+        <option name="charting.layout.splitSeries">0</option>
+        <option name="charting.layout.splitSeries.allowIndependentYRanges">0</option>
+        <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
+        <option name="charting.legend.mode">standard</option>
+        <option name="charting.legend.placement">right</option>
+        <option name="charting.lineWidth">2</option>
+        <option name="trellis.enabled">0</option>
+        <option name="trellis.scales.shared">1</option>
+        <option name="trellis.size">medium</option>
+      </chart>
+    </panel>
+    <panel>
+      <title>Top 10 - by User</title>
+      <chart>
+        <search base="base">
+          <query>
+| timechart useother=f  span=1h sum(utilized_svc) by search_user
+```| stats sum(utilized_svc) as utilized_svc by search_label search_app search_type search_user search_head_names _time 
+| eval utilized_svc=round(utilized_svc,2) 
+| sort - utilized_svc
+| rename search_head_names as search_head```</query>
+        </search>
+        <option name="charting.axisLabelsX.majorLabelStyle.overflowMode">ellipsisNone</option>
+        <option name="charting.axisLabelsX.majorLabelStyle.rotation">0</option>
+        <option name="charting.axisTitleX.visibility">visible</option>
+        <option name="charting.axisTitleY.visibility">visible</option>
+        <option name="charting.axisTitleY2.visibility">visible</option>
+        <option name="charting.axisX.abbreviation">none</option>
+        <option name="charting.axisX.scale">linear</option>
+        <option name="charting.axisY.abbreviation">none</option>
+        <option name="charting.axisY.scale">linear</option>
+        <option name="charting.axisY2.abbreviation">none</option>
+        <option name="charting.axisY2.enabled">0</option>
+        <option name="charting.axisY2.scale">inherit</option>
+        <option name="charting.chart">column</option>
+        <option name="charting.chart.bubbleMaximumSize">50</option>
+        <option name="charting.chart.bubbleMinimumSize">10</option>
+        <option name="charting.chart.bubbleSizeBy">area</option>
+        <option name="charting.chart.nullValueMode">gaps</option>
+        <option name="charting.chart.showDataLabels">none</option>
+        <option name="charting.chart.sliceCollapsingThreshold">0.01</option>
+        <option name="charting.chart.stackMode">stacked</option>
+        <option name="charting.chart.style">shiny</option>
+        <option name="charting.drilldown">none</option>
+        <option name="charting.layout.splitSeries">0</option>
+        <option name="charting.layout.splitSeries.allowIndependentYRanges">0</option>
+        <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
+        <option name="charting.legend.mode">standard</option>
+        <option name="charting.legend.placement">right</option>
+        <option name="charting.lineWidth">2</option>
+        <option name="trellis.enabled">0</option>
+        <option name="trellis.scales.shared">1</option>
+        <option name="trellis.size">medium</option>
+      </chart>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>Overview</title>
+      <input type="dropdown" token="s_type">
+        <label>Search Type</label>
+        <choice value="*">All</choice>
+        <default>*</default>
+        <fieldForLabel>search_type</fieldForLabel>
+        <fieldForValue>search_type</fieldForValue>
+        <search>
+          <query>index=summary source="splunk-svc-consumer" svc_usage=* 
+| fields svc_usage svc_consumer svc_consumption_score search_type search_app search_label search_user search_head_names 
+| fillnull value="" svc_consumer process_type search_provenances search_app search_label search_user unified_sid search_modes labels search_head_names usage_source 
+| stats max(svc_usage) as utilized_svc by _time svc_consumer search_type search_app search_label search_user search_head_names unified_sid process_type 
+| where utilized_svc&gt;1
+| stats count by search_type</query>
+          <earliest>$time.earliest$</earliest>
+          <latest>$time.latest$</latest>
+        </search>
+      </input>
+      <table>
+        <title>Results only where max SVC &gt; 1</title>
+        <search base="base">
+          <query>
+| search search_type=$s_type|s$
+| stats sum(utilized_svc) as utilized_svc by search_label search_app search_type search_user search_head_names _time 
+| eval utilized_svc=round(utilized_svc,2) 
+| sort - utilized_svc
+| rename search_head_names as search_head</query>
+        </search>
+        <option name="count">20</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="percentagesRow">false</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+      </table>
+    </panel>
+  </row>
+</form>

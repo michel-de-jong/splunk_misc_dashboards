@@ -1,0 +1,41 @@
+<form version="1.1">
+  <label>Wall Of Shame</label>
+  <fieldset submitButton="false" autoRun="true">
+    <input type="time" token="timetok" searchWhenChanged="true">
+      <label>Timespan</label>
+      <default>
+        <earliest>-7d@h</earliest>
+        <latest>now</latest>
+      </default>
+    </input>
+  </fieldset>
+  <row>
+    <panel>
+      <table>
+        <search>
+          <query>index=_audit action=search (search!=*loadjob* search!=*tstats* search!=*dbinspect* search!=*DM* search!=*metadata* search!=*eventcount*) host=sh* savedsearch_name!=_ACCELERATE_DM* app!=Splunk_SA_CIM info!=canceled 
+| eval idx_wildcard=if(match(search, "index\s?=\s?\*\s"), "yes", "no"), idx_def=if(match(search, "index\s?=\s?\"?\w+"), "yes", "no")
+```| lookup host_dns_alt_name.csv local=t host OUTPUT dns_alt_name 
+| eval instance=if(isnotnull(dns_alt_name), dns_alt_name, host)```
+| search idx_wildcard=yes idx_def=no
+| stats max(total_run_time) as total_run_time_seconds count by _time search savedsearch_name app user search_et search_lt 
+| eval timespan=search_lt-search_et, search_timespan_in_days=round(timespan/60/60/24,2), total_run_time_minutes=round(total_run_time_seconds/60,2) 
+| eval search_earliestTime=if(match(search_et, "\d+"), strftime(search_et, "%Y-%m-%d %H:%M:%S"), search_et), search_latestTime=if(match(search_lt, "\d+"), strftime(search_lt, "%Y-%m-%d %H:%M:%S"), search_lt) 
+| fields _time  search app user total_run_time* search_timespan_in_days search_earliest* search_latest* 
+| sort - total_run_time_seconds</query>
+          <earliest>$timetok.earliest$</earliest>
+          <latest>$timetok.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="count">10</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="percentagesRow">false</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+      </table>
+    </panel>
+  </row>
+</form>

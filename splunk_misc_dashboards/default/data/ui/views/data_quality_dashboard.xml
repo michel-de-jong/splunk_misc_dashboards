@@ -1,0 +1,354 @@
+<form theme="dark" version="1.0.0">
+  <label>Data Quality Dashboard</label>
+  <fieldset submitButton="true" autoRun="false">
+    <input type="dropdown" token="index" searchWhenChanged="true">
+      <label>Select Index</label>
+      <fieldForLabel>title</fieldForLabel>
+      <fieldForValue>title</fieldForValue>
+      <search>
+        <query>| eventcount summarize=false index=* | rename index as title | dedup title | fields title</query>
+      </search>
+      <choice value="*">All</choice>
+      <change>
+        <unset token="form.pass_Sourcetype"></unset>
+        <unset token="form.pass_Host"></unset>
+      </change>
+    </input>
+    <input type="dropdown" token="pass_Sourcetype" searchWhenChanged="true">
+      <label>Select Sourcetype</label>
+      <fieldForLabel>data_sourcetype</fieldForLabel>
+      <fieldForValue>data_sourcetype</fieldForValue>
+      <search>
+        <query>| tstats count WHERE index="$index$" by sourcetype |rename sourcetype as data_sourcetype | dedup data_sourcetype | table data_sourcetype</query>
+        <earliest>$pass_Time.earliest$</earliest>
+        <latest>$pass_Time.latest$</latest>
+      </search>
+      <change>
+        <unset token="form.pass_Host"></unset>
+      </change>
+      <choice value="*">All</choice>
+      <default>*</default>
+      <initialValue>*</initialValue>
+    </input>
+    <input type="dropdown" token="pass_Host" searchWhenChanged="true">
+      <label>Select Host</label>
+      <choice value="*">All</choice>
+      <fieldForLabel>data_host</fieldForLabel>
+      <fieldForValue>data_host</fieldForValue>
+      <search>
+        <done>
+          <condition match="$job.resultCount$==0">
+            <unset token="tokDatahostFilter"></unset>
+          </condition>
+          <condition>
+            <set token="tokDatahost">$result.data_hosts$</set>
+          </condition>
+        </done>
+        <query>| tstats count WHERE index=$index$ sourcetype="$pass_Sourcetype$" by host | rename host as data_host | dedup data_host | fields data_host | eventstats values(data_host) as data_hosts
+|eval data_hosts="\"".mvjoin (data_hosts, "\",\"")."\""</query>
+        <earliest>$pass_Time.earliest$</earliest>
+        <latest>$pass_Time.latest$</latest>
+      </search>
+      <change>
+        <condition value="all">
+          <set token="tokDatahostFilter">$tokDatahost$</set>
+        </condition>
+        <condition match="isnull(value)">
+          <unset token="tokDatahostFilter"></unset>
+        </condition>
+        <condition>
+          <set token="tokDatahostFilter">$value$</set>
+        </condition>
+      </change>
+      <default>*</default>
+      <initialValue>*</initialValue>
+    </input>
+    <input type="time" token="pass_Time" searchWhenChanged="true">
+      <label>Select Time</label>
+      <default>
+        <earliest>-4h@m</earliest>
+        <latest>now</latest>
+      </default>
+    </input>
+  </fieldset>
+  <row>
+    <panel depends="$NeverShowThis Panel$">
+      <event>
+        <title>Base Search</title>
+        <search id="baseSearch">
+          <query>index=_internal log_level IN (ERROR, WARN) component=LineBreakingProcessor OR component=AggregatorMiningProcessor OR component=DateParserVerbose data_sourcetype="$pass_Sourcetype$"
+```| rex field=event_message "^(?&lt;data_event_message&gt;.+)\sContext: source(::|=)(?&lt; source&gt;[^\|]*?)\|host(::|=)(?&lt;host1&gt;[^\|]*?)\|(?&lt;sourcetype1&gt;[^\|]*?)\]"```
+| rex field=event_message "^(?&lt;data_event_message&gt;.+)\sContext:\ssource(\:\:|\=)(?&lt;source&gt;[^\|]*?)\|host(::|=)(?&lt;host1&gt;[^\|]*?)\|(?&lt;sourcetype1&gt;[^\|]*?)\|"
+```| search (data_host IN ($tokDatahostFilter$) OR host1 IN ($tokDatahostFilter$) AND ((data_sourcetype=$pass_Sourcetype$) OR (sourcetype1=$pass_Sourcetype$)))```
+| stats count(eval(component="LineBreakingProcessor")) as count1, count(eval(component="AggregatorMiningProcessor")) as count2, count(eval(component="DateParserVerbose")) as count3| eval totalcount=count1+count2+count3</query>
+          <earliest>$pass_Time.earliest$</earliest>
+          <latest>$pass_Time.latest$</latest>
+        </search>
+        <option name="refresh.display">progressbar</option>
+      </event>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>Total Errors</title>
+      <single>
+        <search base="baseSearch">
+          <query>| fields totalcount | rename totalcount as Total</query>
+        </search>
+        <option name="colorMode">block</option>
+        <option name="drilldown">none</option>
+        <option name="height">123</option>
+        <option name="rangeColors">["0x53a051","0xdc4e41"]</option>
+        <option name="rangeValues">[0]</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="useColors">1</option>
+      </single>
+    </panel>
+    <panel>
+      <title># of LineBreaking Errors</title>
+      <single>
+        <search base="baseSearch">
+          <query> |fields count1 | rename count1 as total</query>
+        </search>
+        <option name="colorMode">block</option>
+        <option name="drilldown">all</option>
+        <option name="height">122</option>
+        <option name="rangeColors">["0x53a051","0xdc4e41"]</option>
+        <option name="rangeValues">[0]</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="useColors">1</option>
+        <drilldown>
+          <set token="pass_Componente">$row.total$</set>
+        </drilldown>
+      </single>
+    </panel>
+    <panel>
+      <title># of Aggregation Errors</title>
+      <single>
+        <search base="baseSearch">
+          <query>| fields count2 | rename count2 as total</query>
+        </search>
+        <option name="colorMode">block</option>
+        <option name="drilldown">all</option>
+        <option name="height">121</option>
+        <option name="rangeColors">["0x53a051", "Oxdc4e41"]</option>
+        <option name="rangeValues">[0]</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="useColors">1</option>
+        <drilldown>
+          <set token="pass_Component1">$row.total$</set>
+        </drilldown>
+      </single>
+    </panel>
+    <panel>
+      <title># of Timestamp Errors</title>
+      <single>
+        <search base="baseSearch">
+          <query>|fields count3 | rename count3 as total</query>
+        </search>
+        <option name="colorMode">block</option>
+        <option name="drilldown">all</option>
+        <option name="height">122</option>
+        <option name="rangeColors">["0x53a051","0xdc4e41"]</option>
+        <option name="rangeValues">[0]</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="useColors">1</option>
+        <drilldown>
+          <set token="pass_Component2">$row.total$</set>
+        </drilldown>
+      </single>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>Future Time Stamp Issues</title>
+      <table rejects="$custom$">
+        <search>
+          <progress>
+            <condition match="$job.resultCount$==0">
+              <set token="custom"></set>
+            </condition>
+            <condition>
+              <unset token="custom"></unset>
+            </condition>
+          </progress>
+          <query>| tstats summariesonly=true count where index=$index$ host IN ($tokDatahostFilter$) _index_earliest=-30m earliest=-30m latest=+5y@y groupby host index _time span=10m
+| stats range(_time) as time_range latest(_time) as time by host index
+| convert ctime(_time) as _time
+| where time_range&gt;300
+| rename time as Time, time_range as "Time Range", host as Host, index as Index 
+| convert ctime(Time)
+| fields Time "Time Range" Host Index</query>
+          <earliest>$pass_Time.earliest$</earliest>
+          <latest>$pass_Time.latest$</latest>
+        </search>
+        <option name="drilldown">none</option>
+        <option name="refresh.display">progressbar</option>
+      </table>
+      <html depends="$custom$">
+	<style>
+	p {text-align: center;}
+	</style>
+	<font size="+2">
+	<p>No Errors are available to display</p>
+	</font>
+	</html>
+    </panel>
+  </row>
+  <row>
+    <panel depends="$pass_Componente$">
+      <title>Error Messages For Line Breaking Issues</title>
+      <table rejects="$custom3$">
+        <search>
+          <progress>
+            <condition match="$job.resultCount$==0">
+              <set token="custom3"></set>
+            </condition>
+          </progress>
+          <query>index=_internal log_level IN (ERROR, WARN) component=LineBreakingProcessor data_sourcetype="$pass_Sourcetype$"
+```| rex field=event_message "^(?&lt;data_event_message&gt;.+)\sdata_source\\"(?&lt;data_source&gt;.+)\"\,\sdata_host\-\"(?&lt;data_host&gt;.+)\"\,\sdata_sourcetype\-\"(?&lt;data_sourcetype&gt;.+)\"*```
+```| search (data_host IN ($tokDatahostFilter$) OR host IN ($tokDatahostFilter$)) AND (data_sourcetype="$pass_Sourcetype$" OR sourcetype="$pass_Sourcetype$")```
+
+|rex field=event_message "^(?&lt;data_event_message&gt;.+)source\=(?&lt;data_source&gt;.+)\|host\=(?&lt;data_host&gt;[^\|]+)\|(?&lt;data_sourcetype&gt;[^\|]+)"
+
+|eval error_message=if(like(data_event_message,"Truncating line because limit of%"), "Truncating line because limit of bytes has been exceeded with a line length", data_event_message)
+|eval SourceType=if(len(data_sourcetype)&gt;0, data_sourcetype, sourcetype)
+|rename component as Component, error_message as "Error Message"
+|stats c as "Error Count" by Component "Error Message" SourceType</query>
+          <earliest>$pass_Time.earliest$</earliest>
+          <latest>$pass_Time.latest$</latest>
+        </search>
+        <option name="drilldown">none</option>
+        <option name="refresh.display">progressbar</option>
+      </table>
+      <html depends="$custom3$">
+<style>
+p {text-align: center;}
+</style>
+<font size="+2">
+<p>No Errors are available to display</p>
+</font>
+</html>
+    </panel>
+    <panel depends="$pass_Component1$">
+      <title>Error Messages for Aggregation Issues</title>
+      <table rejects="$custom1$">
+        <search>
+          <progress>
+            <condition match="$job.resultCount $-=0">
+              <set token="custom1"></set>
+            </condition>
+            <condition>
+              <unset token="custom1"></unset>
+            </condition>
+          </progress>
+          <query>index=_internal log_level IN (ERROR, WARN) component=AggregatorMiningProcessor
+|rex field=event_message "^(?&lt;data_event_message&gt;.+)\sdata_source\=\"(?&lt;data_source&gt;.+)\"\,\sdata_host\=\"(?&lt;data_host&gt;.+)\"\,\sdata_sourcetype\=\"(?&lt;data_sourcetype&gt;.+)\""
+| search (data_host IN ($tokDatahostFilter$) OR host IN ($tokDatahostFilter$)) AND (data_sourcetype="$pass_Sourcetype$" OR sourcetype="$pass_Sourcetype$")
+| eval SourceType=if(len(data_sourcetype)&gt;0, data_sourcetype, sourcetype)
+| rename component as Component, data_event_message as "Error Message"
+| stats c as "Error Count" by Component "Error Message" SourceType</query>
+          <earliest>$pass_Time.earliest$</earliest>
+          <latest>$pass_Time.latest$</latest>
+        </search>
+        <option name="drilldown">none</option>
+        <option name="refresh.display">progressbar</option>
+      </table>
+      <html depends="$custom2$">
+	<style>
+		p {text-align: center;}
+	</style>
+	<font size="+2">
+	<p>No Errors are available to display</p>
+	</font>
+	</html>
+    </panel>
+    <panel depends="$pass_Component2$">
+      <title>Error Messages for Time Stamp Parsing Issues</title>
+      <table rejects="$custom2$">
+        <search>
+          <progress>
+            <condition match="$job.resultCount$==0">
+              <set token="custom2"></set>
+            </condition>
+            <condition>
+              <unset token="custom2"></unset>
+            </condition>
+          </progress>
+          <query>````comment($pass_Component2|s$|DonotTouchAbhi`)``` index=_internal log_level IN (ERROR, WARN) component=DateParserVerbose
+```|rex field=event_message "^(?&lt;data_event_message&gt;.+)\sContext: source(::|=)(?&lt;source&gt;[^\|]*?)\|host(::-)(?&lt;host&gt;[^\|]*?)\|(?&lt; sourcetype&gt;[^\|]*?)\\"```
+|rex field=event_message "^(?&lt;data_event_message&gt;.+)source\=(?&lt;data_source&gt;.+)\|host\=(?&lt;data_host&gt;[^\|]+)\|(?&lt;data_sourcetype&gt;[^\|]+)"
+|search (data_host IN ($tokDatahostFilter$) OR host IN ($tokDatahostFilter$)) AND (data_sourcetype="$pass_Sourcetype$" OR sourcetype="$pass_Sourcetype$")
+|rex field=data_event_message mode=sed "s/\([a-zA-Z].*?\)/TIME_STAMP/g"
+| rex field=data_event_message mode=sed "s/MAX_TIMESTAMP_LOOKAHEAD\s\(.*?\)/MAX_TIMESTAMP_LOOKAHEAD/g"
+| eval SourceType=if(len(data_sourcetype)&gt;0, data_sourcetype, sourcetype)
+|rename component as Component, data_event_message as "Error Message"
+| stats c as "Error Count" by Component "Error Message" SourceType</query>
+          <earliest>$pass_Time.earliest$</earliest>
+          <latest>$pass_Time.latest$</latest>
+        </search>
+        <option name="drilldown">none</option>
+        <option name="refresh.display">progressbar</option>
+      </table>
+      <html depends="$custom2$">
+	<style>
+		p {text-align: center;}
+	</style>
+	<font size="+2">
+	<p>No Errors are available to display</p>
+	</font>
+	</html>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>Time Difference Issues</title>
+      <!--<table rejects="$custom4$">-->
+      <!--<html depends="$custom4$">
+	<style>
+	p {text-align: center;}
+	</style>
+	<font size="+2">
+	<p>No results are found</p>
+	</font>
+	</html> -->
+      <table>
+        <search>
+          <progress>
+            <condition match="$job.resultCount$==0">
+              <set token="custom4"></set>
+            </condition>
+            <condition>
+              <unset token="custon4"></unset>
+            </condition>
+          </progress>
+          <query>| tstats c where index=$index$ host IN ($tokDatahostFilter$) sourcetype="$pass_Sourcetype$" groupby host index _time _indextime sourcetype
+| eval Time_Diff=round((_time-_indextime)/60,3) 
+| stats latest(_indextime) as Index_Time latest(_time) as Time min(Time_Diff) as mint max(Time_Diff) as maxt by index _time sourcetype 
+| eval Time_Difference=round((Time-Index_Time)/60,3) 
+| rename index as Index, Index_Time as "Index Time", Time as "Current Time", _time as "Event Time", sourcetype as Sourcetype 
+| convert ctime("Current Time") ctime(Time) ctime("Index Time") ctime("Event Time") 
+| where Time_Difference&lt;=-1 OR Time_Difference&gt;=1 
+| eval IssueType=if(Time_Difference&gt;0, "Future Time Stamp","Past Time Stamp") 
+| eval Time_Difference="Max diff: " + maxt + " min || " + "Min diff: " + mint + " min"
+| rename Time_Difference as "Time Difference" 
+| fields - mint maxt
+| head 1 
+| fields Index Sourcetype "Event Time" "Index Time" "Current Time" "Time Difference" IssueType</query>
+          <earliest>-6h</earliest>
+          <latest>now</latest>
+        </search>
+        <option name="drilldown">none</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="rowNumbers">true</option>
+        <option name="wrap">false</option>
+        <format type="color" field="Time Difference">
+          <colorPalette type="map"></colorPalette>
+        </format>
+        <format type="color" field="IssueType">
+          <colorPalette type="map">{"Future Time Stamp":#D94E17,"Past Time Stamp":#CBA700}</colorPalette>
+        </format>
+      </table>
+    </panel>
+  </row>
+</form>

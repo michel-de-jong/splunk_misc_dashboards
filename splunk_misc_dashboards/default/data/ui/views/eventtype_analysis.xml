@@ -1,0 +1,156 @@
+<dashboard version="1.1">
+  <label>Eventtype analysis</label>
+  <row>
+    <panel>
+      <title>Count sourcetype in eventtype per app</title>
+      <table>
+        <search>
+          <query>| rest /services/saved/eventtypes  splunk_server=local
+| rename eai:acl.* as *
+| where disabled=0
+| table app title tags search
+| rex field=search max_match=0 "sourcetype\s?=\s?\"?(?&lt;sourcetype_a&gt;[^ \n)\"]+)"
+| rex field=search max_match=0 "sourcetype\s?IN\s?\((?&lt;sourcetype_b&gt;[^, \)]+)"
+| eval sourcetype_b=sourcetype_b." + many"
+| eval sourcetype_s=coalesce(sourcetype_a,sourcetype_b,null())
+| rex field=search max_match=0 "eventtype\s?=\s?\"?(?&lt;eventtype_s&gt;[^ \n)\"]+)" 
+| fields - sourcetype_a sourcetype_b 
+| stats c by sourcetype_s app
+| sort - c</query>
+          <earliest>-30m@m</earliest>
+          <latest>now</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="count">10</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="percentagesRow">false</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+      </table>
+    </panel>
+    <panel>
+      <title>Count tags per app</title>
+      <table>
+        <search>
+          <query>| rest /services/saved/eventtypes  splunk_server=local
+| rename eai:acl.* as *
+| where disabled=0
+| table app title tags search
+| rex field=search max_match=0 "sourcetype\s?=\s?\"?(?&lt;sourcetype_a&gt;[^ \n)\"]+)"
+| rex field=search max_match=0 "sourcetype\s?IN\s?\((?&lt;sourcetype_b&gt;[^, \)]+)"
+| eval sourcetype_b=sourcetype_b." + many"
+| eval sourcetype_s=coalesce(sourcetype_a,sourcetype_b,null())
+| rex field=search max_match=0 "eventtype\s?=\s?\"?(?&lt;eventtype_s&gt;[^ \n)\"]+)" 
+| fields - sourcetype_a sourcetype_b 
+| stats c by tags app
+| sort - c</query>
+          <earliest>-30m@m</earliest>
+          <latest>now</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="count">10</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="percentagesRow">false</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+      </table>
+    </panel>
+    <panel>
+      <title>Count eventtypes without tags per app</title>
+      <table>
+        <search>
+          <query>| rest /services/saved/eventtypes  splunk_server=local
+| rename eai:acl.* as *
+| where disabled=0
+| table app title tags search
+| rex field=search max_match=0 "sourcetype\s?=\s?\"?(?&lt;sourcetype_a&gt;[^ \n)\"]+)"
+| rex field=search max_match=0 "sourcetype\s?IN\s?\((?&lt;sourcetype_b&gt;[^, \)]+)"
+| eval sourcetype_b=sourcetype_b." + many"
+| eval sourcetype_s=coalesce(sourcetype_a,sourcetype_b,null())
+| rex field=search max_match=0 "eventtype\s?=\s?\"?(?&lt;eventtype_s&gt;[^ \n)\"]+)" 
+| fields - sourcetype_a sourcetype_b 
+| where isnull(tags)
+| stats c by app
+| sort - c</query>
+          <earliest>-30m@m</earliest>
+          <latest>now</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="count">10</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="percentagesRow">false</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>Eventtypes without tags</title>
+      <table>
+        <search>
+          <query>| rest /services/saved/eventtypes  splunk_server=local
+| rename eai:acl.* as *
+| where disabled=0
+| table app title tags search
+| rex field=search max_match=0 "sourcetype\s?=\s?\"?(?&lt;sourcetype_a&gt;[^ \n)\"]+)"
+| rex field=search max_match=0 "sourcetype\s?IN\s?\((?&lt;sourcetype_b&gt;[^, \)]+)"
+| eval sourcetype_b=sourcetype_b." + many"
+| eval sourcetype_s=coalesce(sourcetype_a,sourcetype_b,null())
+| rex field=search max_match=0 "eventtype\s?=\s?\"?(?&lt;eventtype_s&gt;[^ \n)\"]+)" 
+| fields - sourcetype_a sourcetype_b
+| sort + app
+| where isnull(tags)</query>
+          <earliest>-30m@m</earliest>
+          <latest>now</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="count">10</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="percentagesRow">false</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>Total Overview</title>
+      <table>
+        <search>
+          <query>| rest /services/saved/eventtypes  splunk_server=local
+| rename eai:acl.* as *
+| where disabled=0
+| table app title tags search
+| rex field=search max_match=0 "sourcetype\s?=\s?\"?(?&lt;sourcetype_a&gt;[^ \n)\"]+)"
+| rex field=search max_match=0 "sourcetype\s?IN\s?\((?&lt;sourcetype_b&gt;[^, \)]+)"
+| eval sourcetype_b=sourcetype_b." + many"
+| eval sourcetype_s=coalesce(sourcetype_a,sourcetype_b,null())
+| rex field=search max_match=0 "eventtype\s?=\s?\"?(?&lt;eventtype_s&gt;[^ \n)\"]+)" 
+| fields - sourcetype_a sourcetype_b
+| sort + app</query>
+          <earliest>-30m@m</earliest>
+          <latest>now</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="count">10</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="percentagesRow">false</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+      </table>
+    </panel>
+  </row>
+</dashboard>
