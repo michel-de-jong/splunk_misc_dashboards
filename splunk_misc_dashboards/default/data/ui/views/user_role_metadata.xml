@@ -6,7 +6,7 @@
     | rest /services/authentication/users 
     | table defaultApp id realname email roles type splunk_server capabilities 
     | replace "*%40*" with "*@*" in id 
-    | rex field=id "/users/(?<user>.+)$"
+    | rex field=id "/users/(?&lt;user&gt;.+)$"
     | table user id realname email roles type capabilities
     </query>
     <earliest>-1h@h</earliest>
