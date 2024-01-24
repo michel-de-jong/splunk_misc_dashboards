@@ -1,16 +1,17 @@
 <form version="1.1">
   <label>User Role MetaData</label>
-  <fieldset submitButton="false">
   <search id="base_user">
     <query>
     | rest /services/authentication/users 
-    | table defaultApp id realname email roles type splunk_server capabilities 
+    | fields defaultApp id realname email roles type splunk_server capabilities 
     | replace "*%40*" with "*@*" in id 
     | rex field=id "/users/(?&lt;user&gt;.+)$"
-    | table user id realname email roles type capabilities
+    | fields user id realname email roles type capabilities
     </query>
-    <earliest>-1h@h</earliest>
+    <earliest>-24h@h</earliest>
     <latest>now</latest>
+  </search>
+  <fieldset submitButton="false">
     <input type="dropdown" token="user" searchWhenChanged="true">
       <label>User</label>
       <choice value="*">All</choice>
@@ -38,8 +39,6 @@
 | dedup realname
 | table realname
 | sort realname</query>
-        <earliest>-24h@h</earliest>
-        <latest>now</latest>
       </search>
     </input>
     <input type="text" token="real_name_pattern" searchWhenChanged="true">
@@ -74,8 +73,6 @@
 | dedup type
 | table type
 | sort type</query>
-        <earliest>-24h@h</earliest>
-        <latest>now</latest>
       </search>
     </input>
     <input type="dropdown" token="role" searchWhenChanged="true">
@@ -90,8 +87,6 @@
 | dedup roles
 | table roles
 | sort roles</query>
-        <earliest>-24h@h</earliest>
-        <latest>now</latest>
       </search>
       <default>*</default>
     </input>
@@ -114,9 +109,6 @@
 | table user realname email type roles  
 | search user="$user$" user="*$user_pattern$*" 
 | sort -type user</query>
-          <earliest>0</earliest>
-          <latest></latest>
-          <sampleRatio>1</sampleRatio>
         </search>
         <option name="count">20</option>
         <option name="dataOverlayMode">none</option>
@@ -174,9 +166,6 @@
 | table role capabilities   
 | sort role 
 | transpose 1000 column_name=role header_field=role</query>
-          <earliest>0</earliest>
-          <latest></latest>
-          <sampleRatio>1</sampleRatio>
         </search>
         <option name="count">10</option>
         <option name="dataOverlayMode">none</option>
@@ -230,9 +219,6 @@
 | table role srchIndexesAllowed srchIndexesDisallowed  srchJobsQuota srchDiskQuota
 | sort role 
 | transpose 1000 column_name=role header_field=role</query>
-          <earliest>0</earliest>
-          <latest></latest>
-          <sampleRatio>1</sampleRatio>
         </search>
         <option name="count">10</option>
         <option name="dataOverlayMode">none</option>
