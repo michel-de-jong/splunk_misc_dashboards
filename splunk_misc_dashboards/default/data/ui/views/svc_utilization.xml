@@ -4,7 +4,6 @@
     <query>
       index=summary source="splunk-svc-consumer" svc_usage=* 
 | rex field=host "^[^.]+[.](?&lt;event_stack&gt;[^.]+)" 
-| where event_stack="barclayscsoprodsiem" 
 | eval search_head_names=if(isnull(search_head_names), "Historical", search_head_names) 
 | fields svc_usage svc_consumer svc_consumption_score search_type search_app search_label search_user search_head_names 
 | eval search_label=if(isnull(search_label) OR search_label=="", "adhoc-search", search_label) 
