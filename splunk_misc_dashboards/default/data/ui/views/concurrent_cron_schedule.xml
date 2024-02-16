@@ -6,9 +6,9 @@
       <table>
         <search>
           <query>| rest /servicesNS/-/-/saved/searches  splunk_server=local 
-| fields title eai:acl.app disabled cron_schedule is_scheduled
+| fields title eai:acl.app disabled cron_schedule is_scheduled allow_skew
 | where disabled=0 AND is_scheduled=1
-| stats values(eai:acl.app) as app values(title) as title count by cron_schedule
+| stats values(eai:acl.app) as app values(title) as title values(allow_skew) as allow_skew count by cron_schedule
 | sort - count</query>
           <earliest>-30m@m</earliest>
           <latest>now</latest>
@@ -30,9 +30,9 @@
       <table>
         <search>
           <query>| rest /servicesNS/-/-/saved/searches splunk_server=local 
-| fields title eai:acl.app disabled cron_schedule is_scheduled 
+| fields title eai:acl.app disabled cron_schedule is_scheduled allow_skew
 | where disabled=0 AND is_scheduled=1
-| stats values(eai:acl.app) as app by cron_schedule title 
+| stats values(eai:acl.app) as app values(allow_skew) as allow_skew by cron_schedule title
 | sort - count 
 | join title 
     [| rest /servicesNS/-/-/saved/searches splunk_server=local 

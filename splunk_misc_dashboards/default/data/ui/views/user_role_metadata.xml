@@ -2,7 +2,7 @@
   <label>User Role MetaData</label>
   <search id="base_user">
     <query>
-    | rest /services/authentication/users 
+    | rest /services/authentication/users splunk_server=local
     | fields defaultApp id realname email roles type splunk_server capabilities 
     | replace "*%40*" with "*@*" in id 
     | rex field=id "/users/(?&lt;user&gt;.+)$"
@@ -158,7 +158,7 @@
 | mvexpand role 
 | dedup role 
 | join role 
-    [ | rest /services/authorization/roles 
+    [ | rest /services/authorization/roles splunk_server=local
     | fields title srchIndexesAllowed srchIndexesDisallowed imported_roles imported_srchIndexesAllowed srchJobsQuota srchDiskQuota capabilities  imported_capabilities
     | dedup title 
     | rename title as role
@@ -211,7 +211,7 @@
 | mvexpand role 
 | dedup role 
 | join role 
-     [ | rest /services/authorization/roles 
+     [ | rest /services/authorization/roles splunk_server=local 
     | fields title srchIndexesAllowed srchIndexesDisallowed imported_roles imported_srchIndexesAllowed srchJobsQuota srchDiskQuota capabilities  imported_capabilities
     | dedup title 
     | rename title as role

@@ -225,7 +225,7 @@
       <table>
         <search base="base">
           <query>
-| eval index="index=\""+index+"\"", macro="cim_Alerts_indexes"
+| eval index="index=\""+index+"\"", macro="cim_Web_indexes"
 | mvcombine index
 | eval index=mvjoin(index, " OR ")</query>
         </search>
