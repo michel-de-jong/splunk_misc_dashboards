@@ -1,0 +1,441 @@
+<form version="1.1" theme="light">
+  <label>DMA Macro Builder</label>
+  <init>
+    <unset token="authentication_panel"></unset>
+    <unset token="change_panel"></unset>
+    <unset token="email_panel"></unset>
+    <unset token="malware_panel"></unset>
+    <unset token="performance_panel"></unset>
+    <unset token="ticket_panel"></unset>
+    <unset token="nresolution_panel"></unset>
+    <unset token="nsessions_panel"></unset>
+    <unset token="ntraffic_panel"></unset>
+    <unset token="updates_panel"></unset>
+    <unset token="vulnerabilities_panel"></unset>
+    <unset token="web_panel"></unset>
+  </init>
+  <fieldset submitButton="false">
+    <input type="time" token="time_tok">
+      <label>Timespan</label>
+      <default>
+        <earliest>-5m@m</earliest>
+        <latest>now</latest>
+      </default>
+    </input>
+    <input type="dropdown" token="dm_tok" searchWhenChanged="true">
+      <label>Datamodel</label>
+      <choice value="(`cim_Authentication_indexes`) tag=authentication NOT (action=success user=*$$)">Authentication</choice>
+      <choice value="(`cim_Change_indexes`) tag=change NOT (object_category=file OR object_category=directory OR object_category=registry)">Change</choice>
+      <choice value="(`cim_Email_indexes`) tag=email">Email</choice>
+      <choice value="(`cim_Malware_indexes`) tag=malware tag=attack">Malware</choice>
+      <choice value="(`cim_Performance_indexes`) tag=performance (tag=cpu OR tag=facilities OR tag=memory OR tag=storage OR tag=network OR (tag=os ((tag=time tag=synchronize) OR tag=uptime)))">Performance</choice>
+      <choice value="(`cim_Ticket_Management_indexes`) tag=ticketing">Ticket Management</choice>
+      <choice value="(`cim_Network_Resolution_indexes`) tag=network tag=resolution tag=dns">Network Resolution</choice>
+      <choice value="(`cim_Network_Sessions_indexes`) tag=network tag=session">Network Sessions</choice>
+      <choice value="(`cim_Network_Traffic_indexes`) tag=network tag=communicate">Network Traffic</choice>
+      <choice value="(`cim_Updates_indexes`) tag=update tag=status">Update</choice>
+      <choice value="(`cim_Vulnerabilities_indexes`) tag=vulnerability tag=report">Vulnerabilities</choice>
+      <choice value="(`cim_Web_indexes`) tag=web">Web</choice>
+      <change>
+        <condition value="(`cim_Authentication_indexes`) tag=authentication NOT (action=success user=*$$)">
+          <set token="authentication_panel">true</set>
+          <unset token="change_panel"></unset>
+          <unset token="email_panel"></unset>
+          <unset token="malware_panel"></unset>
+          <unset token="performance_panel"></unset>
+          <unset token="ticket_panel"></unset>
+          <unset token="nresolution_panel"></unset>
+          <unset token="nsessions_panel"></unset>
+          <unset token="ntraffic_panel"></unset>
+          <unset token="updates_panel"></unset>
+          <unset token="vulnerabilities_panel"></unset>
+          <unset token="web_panel"></unset>
+        </condition>
+        <condition value="(`cim_Change_indexes`) tag=change NOT (object_category=file OR object_category=directory OR object_category=registry)">
+          <set token="change_panel">true</set>
+          <unset token="authentication_panel"></unset>
+          <unset token="email_panel"></unset>
+          <unset token="malware_panel"></unset>
+          <unset token="performance_panel"></unset>
+          <unset token="ticket_panel"></unset>
+          <unset token="nresolution_panel"></unset>
+          <unset token="nsessions_panel"></unset>
+          <unset token="ntraffic_panel"></unset>
+          <unset token="updates_panel"></unset>
+          <unset token="vulnerabilities_panel"></unset>
+          <unset token="web_panel"></unset>
+        </condition>
+        <condition value="(`cim_Email_indexes`) tag=email">
+          <set token="email_panel">true</set>
+          <unset token="authentication_panel"></unset>
+          <unset token="change_panel"></unset>
+          <unset token="malware_panel"></unset>
+          <unset token="performance_panel"></unset>
+          <unset token="ticket_panel"></unset>
+          <unset token="nresolution_panel"></unset>
+          <unset token="nsessions_panel"></unset>
+          <unset token="ntraffic_panel"></unset>
+          <unset token="updates_panel"></unset>
+          <unset token="vulnerabilities_panel"></unset>
+          <unset token="web_panel"></unset>
+        </condition>
+        <condition value="(`cim_Malware_indexes`) tag=malware tag=attack">
+          <set token="malware_panel">true</set>
+          <unset token="authentication_panel"></unset>
+          <unset token="change_panel"></unset>
+          <unset token="email_panel"></unset>
+          <unset token="performance_panel"></unset>
+          <unset token="ticket_panel"></unset>
+          <unset token="nresolution_panel"></unset>
+          <unset token="nsessions_panel"></unset>
+          <unset token="ntraffic_panel"></unset>
+          <unset token="updates_panel"></unset>
+          <unset token="vulnerabilities_panel"></unset>
+          <unset token="web_panel"></unset>
+        </condition>
+        <condition value="(`cim_Performance_indexes`) tag=performance (tag=cpu OR tag=facilities OR tag=memory OR tag=storage OR tag=network OR (tag=os ((tag=time tag=synchronize) OR tag=uptime)))">
+          <set token="performance_panel">true</set>
+          <unset token="authentication_panel"></unset>
+          <unset token="change_panel"></unset>
+          <unset token="email_panel"></unset>
+          <unset token="malware_panel"></unset>
+          <unset token="ticket_panel"></unset>
+          <unset token="nresolution_panel"></unset>
+          <unset token="nsessions_panel"></unset>
+          <unset token="ntraffic_panel"></unset>
+          <unset token="updates_panel"></unset>
+          <unset token="vulnerabilities_panel"></unset>
+          <unset token="web_panel"></unset>
+        </condition>
+        <condition value="(`cim_Ticket_Management_indexes`) tag=ticketing">
+          <set token="ticket_panel">true</set>
+          <unset token="authentication_panel"></unset>
+          <unset token="change_panel"></unset>
+          <unset token="email_panel"></unset>
+          <unset token="malware_panel"></unset>
+          <unset token="performance_panel"></unset>
+          <unset token="nresolution_panel"></unset>
+          <unset token="nsessions_panel"></unset>
+          <unset token="ntraffic_panel"></unset>
+          <unset token="updates_panel"></unset>
+          <unset token="vulnerabilities_panel"></unset>
+          <unset token="web_panel"></unset>
+        </condition>
+        <condition value="(`cim_Network_Resolution_indexes`) tag=network tag=resolution tag=dns">
+          <set token="nresolution_panel">true</set>
+          <unset token="authentication_panel"></unset>
+          <unset token="change_panel"></unset>
+          <unset token="email_panel"></unset>
+          <unset token="malware_panel"></unset>
+          <unset token="performance_panel"></unset>
+          <unset token="ticket_panel"></unset>
+          <unset token="nsessions_panel"></unset>
+          <unset token="ntraffic_panel"></unset>
+          <unset token="updates_panel"></unset>
+          <unset token="vulnerabilities_panel"></unset>
+          <unset token="web_panel"></unset>
+        </condition>
+        <condition value="(`cim_Network_Sessions_indexes`) tag=network tag=session">
+          <set token="nsessions_panel">true</set>
+          <unset token="authentication_panel"></unset>
+          <unset token="change_panel"></unset>
+          <unset token="email_panel"></unset>
+          <unset token="malware_panel"></unset>
+          <unset token="performance_panel"></unset>
+          <unset token="ticket_panel"></unset>
+          <unset token="nresolution_panel"></unset>
+          <unset token="ntraffic_panel"></unset>
+          <unset token="updates_panel"></unset>
+          <unset token="vulnerabilities_panel"></unset>
+          <unset token="web_panel"></unset>
+        </condition>
+        <condition value="(`cim_Network_Traffic_indexes`) tag=network tag=communicate">
+          <set token="ntraffic_panel">true</set>
+          <unset token="authentication_panel"></unset>
+          <unset token="change_panel"></unset>
+          <unset token="email_panel"></unset>
+          <unset token="malware_panel"></unset>
+          <unset token="performance_panel"></unset>
+          <unset token="ticket_panel"></unset>
+          <unset token="nresolution_panel"></unset>
+          <unset token="nsessions_panel"></unset>
+          <unset token="updates_panel"></unset>
+          <unset token="vulnerabilities_panel"></unset>
+          <unset token="web_panel"></unset>
+        </condition>
+        <condition value="(`cim_Updates_indexes`) tag=update tag=status">
+          <set token="updates_panel">true</set>
+          <unset token="authentication_panel"></unset>
+          <unset token="change_panel"></unset>
+          <unset token="email_panel"></unset>
+          <unset token="malware_panel"></unset>
+          <unset token="performance_panel"></unset>
+          <unset token="ticket_panel"></unset>
+          <unset token="nresolution_panel"></unset>
+          <unset token="nsessions_panel"></unset>
+          <unset token="ntraffic_panel"></unset>
+          <unset token="vulnerabilities_panel"></unset>
+          <unset token="web_panel"></unset>
+        </condition>
+        <condition value="(`cim_Vulnerabilities_indexes`) tag=vulnerability tag=report">
+          <set token="vulnerabilities_panel">true</set>
+          <unset token="authentication_panel"></unset>
+          <unset token="change_panel"></unset>
+          <unset token="email_panel"></unset>
+          <unset token="malware_panel"></unset>
+          <unset token="performance_panel"></unset>
+          <unset token="ticket_panel"></unset>
+          <unset token="nresolution_panel"></unset>
+          <unset token="nsessions_panel"></unset>
+          <unset token="ntraffic_panel"></unset>
+          <unset token="updates_panel"></unset>
+          <unset token="web_panel"></unset>
+        </condition>
+        <condition value="(`cim_Web_indexes`) tag=web">
+          <set token="web_panel">true</set>
+          <unset token="authentication_panel"></unset>
+          <unset token="change_panel"></unset>
+          <unset token="email_panel"></unset>
+          <unset token="malware_panel"></unset>
+          <unset token="performance_panel"></unset>
+          <unset token="ticket_panel"></unset>
+          <unset token="nresolution_panel"></unset>
+          <unset token="nsessions_panel"></unset>
+          <unset token="ntraffic_panel"></unset>
+          <unset token="updates_panel"></unset>
+          <unset token="vulnerabilities_panel"></unset>
+        </condition>
+      </change>
+    </input>
+  </fieldset>
+  <search id="base">
+    <query>
+      $dm_tok$
+      | fields index
+      | fields - _*
+      | dedup index
+    </query>
+    <earliest>$time_tok.earliest$</earliest>
+    <latest>$time_tok.latest$</latest>
+    <sampleRatio>1</sampleRatio>
+  </search>
+  <row>
+    <panel depends="$web_panel$">
+      <title>Web Datamodel</title>
+      <table>
+        <search base="base">
+          <query>
+| eval index="index=\""+index+"\"", macro="cim_Alerts_indexes"
+| mvcombine index
+| eval index=mvjoin(index, " OR ")</query>
+        </search>
+        <option name="count">1</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="percentagesRow">false</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+      </table>
+    </panel>
+    <panel depends="$vulnerabilities_panel$">
+      <title>Vulnerabilities Datamodel</title>
+      <table>
+        <search base="base">
+          <query>
+| eval index="index=\""+index+"\"", macro="cim_Vulnerabilities_indexes"
+| mvcombine index
+| eval index=mvjoin(index, " OR ")</query>
+        </search>
+        <option name="count">1</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="percentagesRow">false</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+      </table>
+    </panel>
+    <panel depends="$updates_panel$">
+      <title>Updates Datamodel</title>
+      <table>
+        <search base="base">
+          <query>
+| eval index="index=\""+index+"\"", macro="cim_Updates_indexes"
+| mvcombine index
+| eval index=mvjoin(index, " OR ")</query>
+        </search>
+        <option name="count">1</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="percentagesRow">false</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+      </table>
+    </panel>
+    <panel depends="$ntraffic_panel$">
+      <title>Network Traffic Datamodel</title>
+      <table>
+        <search base="base">
+          <query>
+| eval index="index=\""+index+"\"", macro="cim_Network_Traffic_indexes"
+| mvcombine index
+| eval index=mvjoin(index, " OR ")</query>
+        </search>
+        <option name="count">1</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="percentagesRow">false</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+      </table>
+    </panel>
+    <panel depends="$nsessions_panel$">
+      <title>Network Sessions</title>
+      <table>
+        <search base="base">
+          <query>
+| eval index="index=\""+index+"\"", macro="cim_Network_Sessions_indexes"
+| mvcombine index
+| eval index=mvjoin(index, " OR ")</query>
+        </search>
+        <option name="count">1</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="percentagesRow">false</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+      </table>
+    </panel>
+    <panel depends="$nresolution_panel$">
+      <title>Network Resolution</title>
+      <table>
+        <search base="base">
+          <query>
+| eval index="index=\""+index+"\"", macro="cim_Network_Resolution_indexes"
+| mvcombine index
+| eval index=mvjoin(index, " OR ")</query>
+        </search>
+        <option name="count">1</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="percentagesRow">false</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+      </table>
+    </panel>
+    <panel depends="$ticket_panel$">
+      <title>Ticket Management</title>
+      <table>
+        <search base="base">
+          <query>
+| eval index="index=\""+index+"\"", macro="cim_Ticket_Management_indexes"
+| mvcombine index
+| eval index=mvjoin(index, " OR ")</query>
+        </search>
+        <option name="count">1</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="percentagesRow">false</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+      </table>
+    </panel>
+    <panel depends="$performance_panel$">
+      <title>Performance</title>
+      <table>
+        <search base="base">
+          <query>
+| eval index="index=\""+index+"\"", macro="cim_Performance_indexes"
+| mvcombine index
+| eval index=mvjoin(index, " OR ")</query>
+        </search>
+        <option name="count">1</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="percentagesRow">false</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+      </table>
+    </panel>
+    <panel depends="$malware_panel$">
+      <title>Malware</title>
+      <table>
+        <search base="base">
+          <query>
+| eval index="index=\""+index+"\"", macro="cim_Malware_indexes"
+| mvcombine index
+| eval index=mvjoin(index, " OR ")</query>
+        </search>
+        <option name="count">1</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="percentagesRow">false</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+      </table>
+    </panel>
+    <panel depends="$email_panel$">
+      <title>Email</title>
+      <table>
+        <search base="base">
+          <query>
+| eval index="index=\""+index+"\"", macro="cim_Email_indexes"
+| mvcombine index
+| eval index=mvjoin(index, " OR ")</query>
+        </search>
+        <option name="count">1</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="percentagesRow">false</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+      </table>
+    </panel>
+    <panel depends="$change_panel$">
+      <title>Change</title>
+      <table>
+        <search base="base">
+          <query>
+| eval index="index=\""+index+"\"", macro="cim_Change_indexes"
+| mvcombine index
+| eval index=mvjoin(index, " OR ")</query>
+        </search>
+        <option name="count">1</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="percentagesRow">false</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+      </table>
+    </panel>
+    <panel depends="$authentication_panel$">
+      <title>Authentication</title>
+      <table>
+        <search base="base">
+          <query>
+| eval index="index=\""+index+"\"", macro="cim_Authentication_indexes"
+| mvcombine index
+| eval index=mvjoin(index, " OR ")</query>
+        </search>
+        <option name="count">1</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="percentagesRow">false</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+      </table>
+    </panel>
+  </row>
+</form>
