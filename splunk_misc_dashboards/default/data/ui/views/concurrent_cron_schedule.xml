@@ -31,13 +31,13 @@
         <search>
           <query>| rest /servicesNS/-/-/saved/searches splunk_server=local 
 | fields title eai:acl.app disabled cron_schedule is_scheduled 
-| where disabled=0 AND is_scheduled=1 AND cron_schedule="1-59/15 * * * *" 
+| where disabled=0 AND is_scheduled=1
 | stats values(eai:acl.app) as app by cron_schedule title 
 | sort - count 
 | join title 
     [| rest /servicesNS/-/-/saved/searches splunk_server=local 
     | fields title eai:acl.owner disabled cron_schedule is_scheduled 
-    | where disabled=0 AND is_scheduled=1 AND cron_schedule="1-59/15 * * * *"
+    | where disabled=0 AND is_scheduled=1
     | rename eai:acl.* as *
     | fields title owner ]</query>
           <earliest>-30m@m</earliest>
