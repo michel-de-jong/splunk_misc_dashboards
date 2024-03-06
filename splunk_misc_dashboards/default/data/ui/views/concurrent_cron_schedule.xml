@@ -26,7 +26,7 @@
   </row>
   <row>
     <panel>
-      <title>cron including owner</title>
+      <title>Cron Including Owner</title>
       <table>
         <search>
           <query>| rest /servicesNS/-/-/saved/searches splunk_server=local 
